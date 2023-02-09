@@ -79,14 +79,14 @@ def pretrain_region_model(args):
     else:
         mode = 'w'
 
-    output_h5 = h5py.File(str(output_path), mode)
-    if not 'idx' in output_h5.keys():
-        output_h5.create_dataset('idx', data=idx_all, dtype=np.int32, compression='gzip')
-    if not 'mappability' in output_h5.keys():
-        output_h5.create_dataset('mappability', data=mapp, dtype=np.float32, compression='gzip')
+    with h5py.File(str(output_path), mode) as output_h5:
+        if not 'idx' in output_h5.keys():
+            output_h5.create_dataset('idx', data=idx_all, dtype=np.int32, compression='gzip')
+        if not 'mappability' in output_h5.keys():
+            output_h5.create_dataset('mappability', data=mapp, dtype=np.float32, compression='gzip')
 
-    # output_h5.attrs['mappability_threshold'] = args.map_thresh
-    output_h5.attrs['cohort_name'] = args.cohort_name.encode('utf-8')
+        # output_h5.attrs['mappability_threshold'] = args.map_thresh
+        output_h5.attrs['cohort_name'] = args.cohort_name.encode('utf-8')
 
     # if args.indels:
     #     print('Creating an INDEL model')
@@ -101,9 +101,6 @@ def pretrain_region_model(args):
         count_training_mutations(args)
 
 def count_training_mutations(args):
-    h5 = h5py.File(args.outputFile, 'a')
-    # map_thresh = h5.attrs['mappability_threshold']
-    # mapp = h5['mappability'][:]
 
     df = pd.read_hdf(args.outputFile, 'region_params')
     N_MUT_TOTAL = df.loc[:, 'Y_TRUE'].sum()
@@ -152,29 +149,30 @@ def count_training_mutations(args):
 
     N_SAMPLE_MSK_230 = len(df_mut_230.SAMPLE.unique())
 
-    ## Save values
-    h5.attrs['N_SAMPLES']   = N_SAMPLE
-    h5.attrs['N_MUT_TOTAL'] = N_MUT_TOTAL
-    h5.attrs['N_MUT_TRAIN'] = N_MUT_TRAIN
+    with h5py.File(args.outputFile, 'a') as h5:
+        ## Save values
+        h5.attrs['N_SAMPLES']   = N_SAMPLE
+        h5.attrs['N_MUT_TOTAL'] = N_MUT_TOTAL
+        h5.attrs['N_MUT_TRAIN'] = N_MUT_TRAIN
 
-    h5.attrs['N_MUT_CDS']   = N_MUT_CDS
-    h5.attrs['N_MUT_SAMPLE_CDS']   = N_MUT_CDS
+        h5.attrs['N_MUT_CDS']   = N_MUT_CDS
+        h5.attrs['N_MUT_SAMPLE_CDS']   = N_MUT_CDS
 
-    h5.attrs['N_MUT_MSK_230']   = N_MUT_MSK_230
-    h5.attrs['N_MUT_MSK_341']   = N_MUT_MSK_341
-    h5.attrs['N_MUT_MSK_410']   = N_MUT_MSK_410
-    h5.attrs['N_MUT_MSK_468']   = N_MUT_MSK_468
-    h5.attrs['N_MUT_metabric_173']   = N_MUT_MSK_metabric
-    h5.attrs['N_MUT_ucla_1202']   = N_MUT_MSK_ucla
+        h5.attrs['N_MUT_MSK_230']   = N_MUT_MSK_230
+        h5.attrs['N_MUT_MSK_341']   = N_MUT_MSK_341
+        h5.attrs['N_MUT_MSK_410']   = N_MUT_MSK_410
+        h5.attrs['N_MUT_MSK_468']   = N_MUT_MSK_468
+        h5.attrs['N_MUT_metabric_173']   = N_MUT_MSK_metabric
+        h5.attrs['N_MUT_ucla_1202']   = N_MUT_MSK_ucla
 
-    h5.attrs['N_MUT_SAMPLE_MSK_230']   = N_MUT_SAMPLE_MSK_230
-    h5.attrs['N_MUT_SAMPLE_MSK_341']   = N_MUT_SAMPLE_MSK_341
-    h5.attrs['N_MUT_SAMPLE_MSK_410']   = N_MUT_SAMPLE_MSK_410
-    h5.attrs['N_MUT_SAMPLE_MSK_468']   = N_MUT_SAMPLE_MSK_468
-    h5.attrs['N_MUT_SAMPLE_metabric_173']   = N_MUT_SAMPLE_MSK_metabric
-    h5.attrs['N_MUT_SAMPLE_ucla_1202']   = N_MUT_SAMPLE_MSK_ucla
+        h5.attrs['N_MUT_SAMPLE_MSK_230']   = N_MUT_SAMPLE_MSK_230
+        h5.attrs['N_MUT_SAMPLE_MSK_341']   = N_MUT_SAMPLE_MSK_341
+        h5.attrs['N_MUT_SAMPLE_MSK_410']   = N_MUT_SAMPLE_MSK_410
+        h5.attrs['N_MUT_SAMPLE_MSK_468']   = N_MUT_SAMPLE_MSK_468
+        h5.attrs['N_MUT_SAMPLE_metabric_173']   = N_MUT_SAMPLE_MSK_metabric
+        h5.attrs['N_MUT_SAMPLE_ucla_1202']   = N_MUT_SAMPLE_MSK_ucla
 
-    h5.attrs['N_SAMPLE_MSK_230'] = N_SAMPLE_MSK_230
+        h5.attrs['N_SAMPLE_MSK_230'] = N_SAMPLE_MSK_230
 
 def pretrain_sequence_model(args):
     """ MS Notes:
