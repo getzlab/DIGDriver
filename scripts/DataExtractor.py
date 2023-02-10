@@ -738,7 +738,6 @@ def unzip_h5(args):
         if k == 'x_data':
             shape = zipped_h5f['x_data'].shape
             d = unzipped_h5f.create_dataset('x_data', shape=shape, 
-                                     maxshape=(shape[0], shape[1], None),
                                      dtype=float, data=None)
                                      # dtype=np.float32, data=None)
             chunksize = 8192
