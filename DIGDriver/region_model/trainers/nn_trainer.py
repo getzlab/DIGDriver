@@ -9,6 +9,9 @@ plt.switch_backend('agg')
 
 
 def r2_score(y_true, y_pred):
+    if len(y_true) < 2:
+        # protect against batch size 1, short circuit and return 0
+        return 0.
     r2 = scipy.stats.pearsonr(y_true, y_pred)[0]**2
     return r2 if not np.isnan(r2) else 0
 
