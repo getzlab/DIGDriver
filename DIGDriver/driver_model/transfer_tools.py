@@ -1016,6 +1016,10 @@ def run_element_region_model(f_mut, f_bed, f_h5_pretrain, pretrain_key, scale_fa
         # OBS_INDEL = len(df_mut_null[df_mut_null.ANNOT == 'INDEL'])
         # cj_indel = OBS_INDEL / EXP_INDEL_UNIF
 
+        df_pretrain.to_csv('df_pretrain.tsv', sep='\t')
+        df_mut_tab.to_csv('df_mut_tab.tsv', sep='\t')
+        print(blacklist)
+        
         ## INDEL scaling factor based on expected number of mutations in region model
         f_panel = 'data/genes_CGC_ALL.txt'
         genes = pd.read_table(pkg_resources.resource_stream('DIGDriver', f_panel), names=['GENE'])
