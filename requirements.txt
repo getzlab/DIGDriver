@@ -5,6 +5,6 @@ pandas
 h5py
 pysam
 pybedtools
-pybbi>=0.2.0
+pybbi==0.2.0
 seaborn
 tables
