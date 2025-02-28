@@ -1006,15 +1006,33 @@ def run_element_region_model(f_mut, f_bed, f_h5_pretrain, pretrain_key, scale_fa
         cj = len(df_syn) / exp_syn
         # cj = len(df_mut[(df_mut.GENE != 'TP53') & (df_mut.ANNOT == 'Synonymous')]) / exp_mut
 
-        ## INDEL scaling factor
+        # ## INDEL scaling factor based on coding mutations - deprecated (due to inflated p-values in intronic regions)
+        # f_panel = 'data/genes_CGC_ALL.txt'
+        # genes = pd.read_table(pkg_resources.resource_stream('DIGDriver', f_panel), names=['GENE'])
+        # all_cosmic = genes.GENE.to_list() + ['CDKN2A.p14arf', 'CDKN2A.p16INK4a']
+        # df_gene_null = df_gene[~df_gene.index.isin(all_cosmic)]
+        # df_mut_null = df_mut[~df_mut.index.isin(all_cosmic)]
+        # EXP_INDEL_UNIF = (df_gene_null.Pi_INDEL * df_gene_null.ALPHA_INDEL * df_gene_null.THETA_INDEL).sum()
+        # OBS_INDEL = len(df_mut_null[df_mut_null.ANNOT == 'INDEL'])
+        # cj_indel = OBS_INDEL / EXP_INDEL_UNIF
+
+        ## INDEL scaling factor based on expected number of mutations in region model
         f_panel = 'data/genes_CGC_ALL.txt'
         genes = pd.read_table(pkg_resources.resource_stream('DIGDriver', f_panel), names=['GENE'])
         all_cosmic = genes.GENE.to_list() + ['CDKN2A.p14arf', 'CDKN2A.p16INK4a']
-        df_gene_null = df_gene[~df_gene.index.isin(all_cosmic)]
-        df_mut_null = df_mut[~df_mut.index.isin(all_cosmic)]
-        EXP_INDEL_UNIF = (df_gene_null.Pi_INDEL * df_gene_null.ALPHA_INDEL * df_gene_null.THETA_INDEL).sum()
-        OBS_INDEL = len(df_mut_null[df_mut_null.ANNOT == 'INDEL'])
+        # keep only those non-coding elements that are not associated with known driver genes
+        df_pretrain.to_csv('df_pretrain.tsv', sep='\t')
+        df_mut_tab.to_csv('df_mut_tab.tsv', sep='\t')
+        df_pretrain_null = df_pretrain[~df_pretrain.index.str.split('::', expand=True)[2].isin(all_cosmic)]
+        df_mut_null = df_mut_tab[~df_mut_tab.index.str.split('::', expand=True)[2].isin(all_cosmic)]
+        # expected mutation count based on trained model
+        EXP_INDEL_UNIF = (df_pretrain_null.Pi_INDEL * df_pretrain_null.ALPHA_INDEL * df_pretrain_null.THETA_INDEL).sum()
+        # observed mutation count in target cohort
+        OBS_INDEL = df_mut_null.OBS_INDEL.sum()
+        # scaling factor
         cj_indel = OBS_INDEL / EXP_INDEL_UNIF
+        print('New indel scale factor:', cj_indel)
+        print('Blacklist:', blacklist)
 
     elif scale_type == 'PCAWG_cds':
         assert (pretrain_key == 'PCAWG_cds'), \
